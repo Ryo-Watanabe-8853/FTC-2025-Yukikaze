@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -11,6 +12,7 @@ public class completed extends OpMode {
     DcMotor motor2;
     DcMotor motor3;
     DcMotor motor4;
+    ColorSensor colorSensor;
     public Servo servo1;
     public Servo servo2;
     private int servo1Stage = 0;
@@ -28,8 +30,9 @@ public class completed extends OpMode {
         motor4 = hardwareMap.get(DcMotor.class,"motor4");
         servo1 = hardwareMap.get(Servo.class,"servo1");
         servo2 = hardwareMap.get(Servo.class,"servo2");
-
-        telemetry.addData("Hardware","Initialized");
+        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor1");
+        telemetry.addData("Motors are","Initialized");
+        telemetry.addData("Color Sensors are", "Initialized");
 
     }
 
@@ -125,6 +128,23 @@ public class completed extends OpMode {
         } else if (!gamepad1.right_bumper) {
             rightBumperPressed = false;
         }
+        telemetry.addData("Color Sensor","results");// カラーセンサーの値を読み取って表示
+        int red1 = colorSensor.red();
+        int green1 = colorSensor.green();
+        int blue1 = colorSensor.blue();
+        telemetry.addData("RED",red1);
+        telemetry.addData("GREEN",green1);
+        telemetry.addData("BLUE",blue1);
 
+        if (100 < red1 && red1 < 250 && 80 < green1 && green1 < 150 && blue1 < 100){
+            telemetry.addData("ColorSensor1 is Watching","RED");
+        } else if (100 < red1 && red1 < 200 && green1 > 130 && 50 < blue1 && blue1 < 100){
+            telemetry.addData("ColorSensor1 is Watching","YELLOW");
+        } else if (20 < red1 && red1 < 80 && 80 < green1 && green1 < 200 && 90 < blue1 && blue1 < 500){
+            telemetry.addData("Color Sensor1 is Watching","BLUE");
+        } else {
+            telemetry.addData("Color Sensor is Watching","Something Far");
+        }
+        telemetry.update();
     }
 }
