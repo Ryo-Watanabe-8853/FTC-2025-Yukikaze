@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
-public class completed extends OpMode {
+public class main extends OpMode {
     DcMotor motor1;
     DcMotor motor2;
     DcMotor motor3;
