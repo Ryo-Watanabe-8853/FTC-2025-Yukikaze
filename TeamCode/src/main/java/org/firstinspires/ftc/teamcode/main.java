@@ -28,6 +28,10 @@ public class main extends OpMode {
         motor2 = hardwareMap.get(DcMotor.class,"motor2");
         motor3 = hardwareMap.get(DcMotor.class,"motor3");
         motor4 = hardwareMap.get(DcMotor.class,"motor4");
+        motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor4.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         servo1 = hardwareMap.get(Servo.class,"servo1");
         servo2 = hardwareMap.get(Servo.class,"servo2");
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor1");
