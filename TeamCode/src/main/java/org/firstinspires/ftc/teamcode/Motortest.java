@@ -27,6 +27,7 @@ public class Motortest extends OpMode {
     public void loop() {
         float x = gamepad1.left_stick_x;
         float y = gamepad1.left_stick_y;
+        float x2 = gamepad1.right_stick_x;
 
         if (gamepad1.left_stick_y > 0.2){
             motor1.setPower(-y);
@@ -53,15 +54,15 @@ public class Motortest extends OpMode {
             motor4.setPower(-x);
 
         } else if (gamepad1.right_stick_x < 0) {
-            motor1.setPower(-1);
-            motor2.setPower(-1);
-            motor3.setPower(-0.7);
-            motor4.setPower(-0.7);
+            motor1.setPower(x2);
+            motor2.setPower(x2);
+            motor3.setPower(x2*0.7);
+            motor4.setPower(x2*0.7);
         } else if (gamepad1.right_stick_x > 0) {
-            motor1.setPower(0.7);
-            motor2.setPower(0.7);
-            motor3.setPower(1);
-            motor4.setPower(1);
+            motor1.setPower(x2*0.7);
+            motor2.setPower(x2*0.7);
+            motor3.setPower(x2);
+            motor4.setPower(x2);
         } else {
             motor1.setPower(0);
             motor2.setPower(0);
