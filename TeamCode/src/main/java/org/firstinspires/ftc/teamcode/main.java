@@ -8,11 +8,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 public class main extends OpMode {
-    DcMotor motor1;
-    DcMotor motor2;
-    DcMotor motor3;
-    DcMotor motor4;
-    ColorSensor colorSensor;
+    DcMotor frontRight;
+    DcMotor backRight;
+    DcMotor frontLeft;
+    DcMotor backLeft;
+    ColorSensor colorSensor1;
+    ColorSensor colorSensor2;
     public Servo servo1;
     public Servo servo2;
     private int servo1Stage = 0;
@@ -24,17 +25,17 @@ public class main extends OpMode {
     @Override
 
     public void init() {
-        motor1 = hardwareMap.get(DcMotor.class,"motor1");
-        motor2 = hardwareMap.get(DcMotor.class,"motor2");
-        motor3 = hardwareMap.get(DcMotor.class,"motor3");
-        motor4 = hardwareMap.get(DcMotor.class,"motor4");
-        motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor4.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight = hardwareMap.get(DcMotor.class,"motor1");
+        backRight = hardwareMap.get(DcMotor.class,"motor2");
+        frontLeft = hardwareMap.get(DcMotor.class,"motor3");
+        backLeft = hardwareMap.get(DcMotor.class,"motor4");
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         servo1 = hardwareMap.get(Servo.class,"servo1");
         servo2 = hardwareMap.get(Servo.class,"servo2");
-        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor1");
+        colorSensor1 = hardwareMap.get(ColorSensor.class, "colorSensor1");
         telemetry.addData("Motors are","Initialized");
         telemetry.addData("Color Sensors are", "Initialized");
 
@@ -44,46 +45,47 @@ public class main extends OpMode {
     public void loop() {
         float x = gamepad1.left_stick_x;
         float y = gamepad1.left_stick_y;
+        float x2 = gamepad1.right_stick_x;
 
         if (gamepad1.left_stick_y > 0.2){
-            motor1.setPower(-y);
-            motor2.setPower(-y);
-            motor3.setPower(y);
-            motor4.setPower(y);
+            frontRight.setPower(-y);
+            backRight.setPower(-y);
+            frontLeft.setPower(y);
+            backLeft.setPower(y);
 
         } else if (gamepad1.left_stick_x > 0.2) {
-            motor1.setPower(x);
-            motor2.setPower(-x);
-            motor3.setPower(-x);
-            motor4.setPower(x);
+            frontRight.setPower(x);
+            backRight.setPower(-x);
+            frontLeft.setPower(-x);
+            backLeft.setPower(x);
 
         } else if (gamepad1.left_stick_y < -0.2) {
-            motor1.setPower(-y);
-            motor2.setPower(-y);
-            motor3.setPower(y);
-            motor4.setPower(y);
+            frontRight.setPower(-y);
+            backRight.setPower(-y);
+            frontLeft.setPower(y);
+            backLeft.setPower(y);
 
         } else if (gamepad1.left_stick_x < -0.2) {
-            motor1.setPower(x);
-            motor2.setPower(-x);
-            motor3.setPower(-x);
-            motor4.setPower(x);
+            frontRight.setPower(x);
+            backRight.setPower(-x);
+            frontLeft.setPower(-x);
+            backLeft.setPower(x);
 
         } else if (gamepad1.right_stick_x < 0) {
-            motor1.setPower(0.7);
-            motor2.setPower(0.7);
-            motor3.setPower(1);
-            motor4.setPower(1);
+            frontRight.setPower(x2*0.7);
+            backRight.setPower(x2*0.7);
+            frontLeft.setPower(x2);
+            backLeft.setPower(x2);
         } else if (gamepad1.right_stick_x > 0) {
-            motor1.setPower(-1);
-            motor2.setPower(-1);
-            motor3.setPower(-0.7);
-            motor4.setPower(-0.7);
+            frontRight.setPower(x2);
+            backRight.setPower(x2);
+            frontLeft.setPower(x2);
+            backLeft.setPower(x2);
         }
-        motor1.setPower(0);
-        motor2.setPower(0);
-        motor3.setPower(0);
-        motor4.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
+        frontLeft.setPower(0);
+        backLeft.setPower(0);
 
 
         float radian1 = (float) (servo1.getPosition() * 300);
@@ -133,9 +135,9 @@ public class main extends OpMode {
             rightBumperPressed = false;
         }
         telemetry.addData("Color Sensor","results");// カラーセンサーの値を読み取って表示
-        int red1 = colorSensor.red();
-        int green1 = colorSensor.green();
-        int blue1 = colorSensor.blue();
+        int red1 = colorSensor1.red();
+        int green1 = colorSensor1.green();
+        int blue1 = colorSensor1.blue();
         telemetry.addData("RED",red1);
         telemetry.addData("GREEN",green1);
         telemetry.addData("BLUE",blue1);
@@ -150,5 +152,7 @@ public class main extends OpMode {
             telemetry.addData("Color Sensor is Watching","Something Far");
         }
         telemetry.update();
+
+
     }
 }
