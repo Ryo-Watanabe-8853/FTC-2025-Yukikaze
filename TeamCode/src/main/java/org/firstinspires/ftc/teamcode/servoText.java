@@ -35,16 +35,13 @@ public class servoText extends OpMode {
 
         // arm (servo2) control
         if (gamepad1.left_bumper && !leftBumperPressed) {
-            servo2Stage = (servo2Stage + 1) % 3;  // Cycle through 3 stages
+            servo2Stage = (servo2Stage + 1) % 2;  // Cycle through 3 stages
             switch (servo2Stage) {
                 case 0:
                     servo2.setPosition(0);
                     break;
                 case 1:
-                    servo2.setPosition(0.417);
-                    break;
-                case 2:
-                    servo2.setPosition(0.5);
+                    servo2.setPosition(0.889);
                     break;
             }
             leftBumperPressed = true;
