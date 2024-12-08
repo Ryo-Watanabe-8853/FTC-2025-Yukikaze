@@ -5,23 +5,23 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 @TeleOp
 public class arm2 extends OpMode {
-    DcMotor motor;
+    DcMotor armString;
     @Override
     public void init() {
-        motor = hardwareMap.get(DcMotor.class,"motor");
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armString = hardwareMap.get(DcMotor.class,"armString");
+        armString.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     @Override
     public void loop() {
         if(gamepad1.a){
-            motor.setPower(0.6);
+            armString.setPower(0.6);
         }
         if(gamepad1.b){
-            motor.setPower(0);
+            armString.setPower(0);
         }
         if(gamepad1.x){
-            motor.setPower(-0.6);
+            armString.setPower(-0.6);
         }
     }
 }

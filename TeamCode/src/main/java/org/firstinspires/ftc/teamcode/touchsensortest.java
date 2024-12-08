@@ -7,17 +7,17 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @TeleOp(name = "Touch Sensor Test", group = "Sensor")
 public class touchsensortest extends OpMode {
-    DcMotor motor;
+    DcMotor armString;
     TouchSensor upTouchSensor;
     TouchSensor downTouchSensor;
     boolean armIsDown = true;
 
     @Override
     public void init() {
-        motor = hardwareMap.get(DcMotor.class, "motor");
-        upTouchSensor = hardwareMap.get(TouchSensor.class, "touchsensor1");
-        downTouchSensor = hardwareMap.get(TouchSensor.class, "touchsensor2");
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armString = hardwareMap.get(DcMotor.class, "armString");
+        upTouchSensor = hardwareMap.get(TouchSensor.class, "upTouchSensor");
+        downTouchSensor = hardwareMap.get(TouchSensor.class, "downTouchSensor");
+        armString.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -27,16 +27,16 @@ public class touchsensortest extends OpMode {
     public void loop() {
         // 上方向の動作
         if (gamepad1.left_trigger > 0 && armIsDown) {
-                motor.setPower(0.8); // 上昇
+            armString.setPower(0.8); // 上昇
 
         }
         // 下方向の動作
         else if (gamepad1.left_trigger > 0 && !armIsDown) {
 
-                motor.setPower(-0.8); // 下降
+            armString.setPower(-0.8); // 下降
 
         } else {
-            motor.setPower(0); // トリガーが押されていない場合、モーター停止
+            armString.setPower(0); // トリガーが押されていない場合、モーター停止
         }
         if (upTouchSensor.isPressed() && !downTouchSensor.isPressed()){
             armIsDown = false;

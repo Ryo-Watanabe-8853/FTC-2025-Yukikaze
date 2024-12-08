@@ -12,7 +12,7 @@ public class main extends OpMode {
     DcMotor backRight;
     DcMotor frontLeft;
     DcMotor backLeft;
-    ColorSensor colorSensor1;
+    ColorSensor rightColor;
     ColorSensor colorSensor2;
     public Servo servo1;
     public Servo servo2;
@@ -25,17 +25,17 @@ public class main extends OpMode {
     @Override
 
     public void init() {
-        frontRight = hardwareMap.get(DcMotor.class,"motor1");
-        backRight = hardwareMap.get(DcMotor.class,"motor2");
-        frontLeft = hardwareMap.get(DcMotor.class,"motor3");
-        backLeft = hardwareMap.get(DcMotor.class,"motor4");
+        frontRight = hardwareMap.get(DcMotor.class,"frontRight");
+        backRight = hardwareMap.get(DcMotor.class,"backRight");
+        frontLeft = hardwareMap.get(DcMotor.class,"frontLeft");
+        backLeft = hardwareMap.get(DcMotor.class,"backLeft");
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         servo1 = hardwareMap.get(Servo.class,"servo1");
         servo2 = hardwareMap.get(Servo.class,"servo2");
-        colorSensor1 = hardwareMap.get(ColorSensor.class, "colorSensor1");
+        rightColor = hardwareMap.get(ColorSensor.class, "rightColor");
         telemetry.addData("Motors are","Initialized");
         telemetry.addData("Color Sensors are", "Initialized");
 
@@ -102,15 +102,12 @@ public class main extends OpMode {
 
         // arm (servo2) control
         if (gamepad1.left_bumper && !leftBumperPressed) {
-            servo2Stage = (servo2Stage + 1) % 3;  // Cycle through 3 stages
+            servo2Stage = (servo2Stage + 1) % 2;  // Cycle through 3 stages
             switch (servo2Stage) {
                 case 0:
                     servo2.setPosition(0);
                     break;
                 case 1:
-                    servo2.setPosition(0.417);
-                    break;
-                case 2:
                     servo2.setPosition(0.5);
                     break;
             }
@@ -134,10 +131,9 @@ public class main extends OpMode {
         } else if (!gamepad1.right_bumper) {
             rightBumperPressed = false;
         }
-        telemetry.addData("Color Sensor","results");// カラーセンサーの値を読み取って表示
-        int red1 = colorSensor1.red();
-        int green1 = colorSensor1.green();
-        int blue1 = colorSensor1.blue();
+        int red1 = rightColor.red();
+        int green1 = rightColor.green();
+        int blue1 = rightColor.blue();
         telemetry.addData("RED",red1);
         telemetry.addData("GREEN",green1);
         telemetry.addData("BLUE",blue1);
