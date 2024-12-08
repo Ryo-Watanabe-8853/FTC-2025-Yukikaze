@@ -12,8 +12,6 @@ public class main extends OpMode {
     DcMotor backRight;
     DcMotor frontLeft;
     DcMotor backLeft;
-    ColorSensor rightColor;
-    ColorSensor colorSensor2;
     public Servo servo1;
     public Servo servo2;
     private int servo1Stage = 0;
@@ -35,7 +33,7 @@ public class main extends OpMode {
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         servo1 = hardwareMap.get(Servo.class,"servo1");
         servo2 = hardwareMap.get(Servo.class,"servo2");
-        rightColor = hardwareMap.get(ColorSensor.class, "rightColor");
+
         telemetry.addData("Motors are","Initialized");
         telemetry.addData("Color Sensors are", "Initialized");
 
@@ -100,21 +98,7 @@ public class main extends OpMode {
             servo2Stage = 0;
         }
 
-        // arm (servo2) control
-        if (gamepad1.left_bumper && !leftBumperPressed) {
-            servo2Stage = (servo2Stage + 1) % 2;  // Cycle through 3 stages
-            switch (servo2Stage) {
-                case 0:
-                    servo2.setPosition(0);
-                    break;
-                case 1:
-                    servo2.setPosition(0.5);
-                    break;
-            }
-            leftBumperPressed = true;
-        } else if (!gamepad1.left_bumper) {
-            leftBumperPressed = false;
-        }
+        servo2.setPosition((double)8/9);
 
         // hand (servo1) control
         if (gamepad1.right_bumper && !rightBumperPressed) {
@@ -124,31 +108,12 @@ public class main extends OpMode {
                     servo1.setPosition(0);
                     break;
                 case 1:
-                    servo1.setPosition(0.333);
+                    servo1.setPosition(0.37);
                     break;
             }
             rightBumperPressed = true;
         } else if (!gamepad1.right_bumper) {
             rightBumperPressed = false;
         }
-        int red1 = rightColor.red();
-        int green1 = rightColor.green();
-        int blue1 = rightColor.blue();
-        telemetry.addData("RED",red1);
-        telemetry.addData("GREEN",green1);
-        telemetry.addData("BLUE",blue1);
-
-        if (100 < red1 && red1 < 250 && 80 < green1 && green1 < 150 && blue1 < 100){
-            telemetry.addData("ColorSensor1 is Watching","RED");
-        } else if (100 < red1 && red1 < 200 && green1 > 130 && 50 < blue1 && blue1 < 100){
-            telemetry.addData("ColorSensor1 is Watching","YELLOW");
-        } else if (20 < red1 && red1 < 80 && 80 < green1 && green1 < 200 && 90 < blue1 && blue1 < 500){
-            telemetry.addData("Color Sensor1 is Watching","BLUE");
-        } else {
-            telemetry.addData("Color Sensor is Watching","Something Far");
-        }
-        telemetry.update();
-
-
     }
 }
