@@ -2,9 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
 
 @TeleOp
 public class main extends OpMode {
@@ -16,9 +17,17 @@ public class main extends OpMode {
     public Servo servo2;
     private int servo1Stage = 0;
     private int servo2Stage = 0;
+    DcMotor armString;
+    TouchSensor upTouchSensor;
+    TouchSensor downTouchSensor;
+    boolean armIsDown = true;
+    DcMotor hexMotor;
+    double ticks = 288;
+    double Target;
 
     private boolean leftBumperPressed = false;
     private boolean rightBumperPressed = false;
+
 
     @Override
 
@@ -31,60 +40,60 @@ public class main extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        backLeft.setDirection(DcMotor.Direction.FORWARD);
+        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.REVERSE);
+
         servo1 = hardwareMap.get(Servo.class,"servo1");
         servo2 = hardwareMap.get(Servo.class,"servo2");
 
-        telemetry.addData("Motors are","Initialized");
-        telemetry.addData("Color Sensors are", "Initialized");
+        armString = hardwareMap.get(DcMotor.class, "armString");
+        armString.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        upTouchSensor = hardwareMap.get(TouchSensor.class, "upTouchSensor");
+        downTouchSensor = hardwareMap.get(TouchSensor.class, "downTouchSensor");
+
+        hexMotor = hardwareMap.get(DcMotor.class, "hexMotor");
+        hexMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        hexMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     @Override
     public void loop() {
-        float x = gamepad1.left_stick_x;
-        float y = gamepad1.left_stick_y;
-        float x2 = gamepad1.right_stick_x;
+        double x = gamepad1.left_stick_x;
+        double y = -gamepad1.left_stick_y;
+        double rotation = gamepad1.right_stick_x;
 
-        if (gamepad1.left_stick_y > 0.2){
-            frontRight.setPower(-y);
-            backRight.setPower(-y);
-            frontLeft.setPower(y);
-            backLeft.setPower(y);
+        double maxSpeed = 0.7;
 
-        } else if (gamepad1.left_stick_x > 0.2) {
-            frontRight.setPower(x);
-            backRight.setPower(-x);
-            frontLeft.setPower(-x);
-            backLeft.setPower(x);
+        double powerFrontLeft = y + x + rotation;
+        double powerFrontRight = y - x - rotation;
+        double powerBackLeft = y - x + rotation;
+        double powerBackRight = y + x - rotation;
 
-        } else if (gamepad1.left_stick_y < -0.2) {
-            frontRight.setPower(-y);
-            backRight.setPower(-y);
-            frontLeft.setPower(y);
-            backLeft.setPower(y);
+        double maxPower = Math.max(Math.abs(powerFrontLeft),
+                            Math.max(Math.abs(powerFrontRight),
+                            Math.max(Math.abs(powerBackLeft), Math.abs(powerBackRight))));
 
-        } else if (gamepad1.left_stick_x < -0.2) {
-            frontRight.setPower(x);
-            backRight.setPower(-x);
-            frontLeft.setPower(-x);
-            backLeft.setPower(x);
-
-        } else if (gamepad1.right_stick_x < 0) {
-            frontRight.setPower(x2*0.7);
-            backRight.setPower(x2*0.7);
-            frontLeft.setPower(x2);
-            backLeft.setPower(x2);
-        } else if (gamepad1.right_stick_x > 0) {
-            frontRight.setPower(x2);
-            backRight.setPower(x2);
-            frontLeft.setPower(x2);
-            backLeft.setPower(x2);
+        if (maxPower > maxSpeed) {
+            powerFrontLeft *= maxSpeed / maxPower;
+            powerFrontRight *= maxSpeed / maxPower;
+            powerBackLeft *= maxSpeed / maxPower;
+            powerBackRight *= maxSpeed / maxPower;
         }
-        frontRight.setPower(0);
-        backRight.setPower(0);
-        frontLeft.setPower(0);
-        backLeft.setPower(0);
 
+        frontLeft.setPower(powerFrontLeft);
+        frontRight.setPower(powerFrontRight);
+        backLeft.setPower(powerBackLeft);
+        backRight.setPower(powerBackRight);
+
+
+        telemetry.addData("Front Right Power", frontRight.getPower());
+        telemetry.addData("Front Left Power", frontLeft.getPower());
+        telemetry.addData("Back Right Power", backRight.getPower());
+        telemetry.addData("Back Left Power", backLeft.getPower());
 
         float radian1 = (float) (servo1.getPosition() * 300);
         float radian2 = (float) (servo2.getPosition() * 180);
@@ -98,7 +107,20 @@ public class main extends OpMode {
             servo2Stage = 0;
         }
 
-        servo2.setPosition((double)8/9);
+        if (gamepad1.left_bumper && !leftBumperPressed) {
+            servo2Stage = (servo2Stage + 1) % 2;  // Cycle through 3 stages
+            switch (servo2Stage) {
+                case 0:
+                    servo2.setPosition(0);
+                    break;
+                case 1:
+                    servo2.setPosition(0.7);
+                    break;
+            }
+            leftBumperPressed = true;
+        } else if (!gamepad1.left_bumper) {
+            leftBumperPressed = false;
+        }
 
         // hand (servo1) control
         if (gamepad1.right_bumper && !rightBumperPressed) {
@@ -115,5 +137,66 @@ public class main extends OpMode {
         } else if (!gamepad1.right_bumper) {
             rightBumperPressed = false;
         }
+        if (gamepad1.left_trigger > 0 && armIsDown) {
+            armString.setPower(1); // 上昇
+
+        }
+        // 下方向の動作
+        else if (gamepad1.left_trigger > 0 && !armIsDown) {
+
+            armString.setPower(-1); // 下降
+
+        } else {
+            armString.setPower(0); // トリガーが押されていない場合、モーター停止
+        }
+        if (upTouchSensor.isPressed() && !downTouchSensor.isPressed()){
+            armIsDown = false;
+        } else if (downTouchSensor.isPressed() && !upTouchSensor.isPressed()){
+            armIsDown = true;
+        }
+
+
+        // テレメトリでデバッグ情報を表示
+        telemetry.addData("Arm Position", armIsDown ? "Down" : "Up");
+        telemetry.addData("Up Sensor Pressed", upTouchSensor.isPressed());
+        telemetry.addData("Down Sensor Pressed", downTouchSensor.isPressed());
+        if(gamepad1.a){
+            encoder(6.6);
+        }
+        if(gamepad1.b){
+            returnToZero();
+        }
+
     }
+    public void encoder(double turnage){
+        Target = ticks/turnage;
+        hexMotor.setTargetPosition((int) Target);
+        hexMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        hexMotor.setPower(-0.7);
+        while (hexMotor.isBusy()) {
+            telemetry.addData("Current Position", hexMotor.getCurrentPosition());
+            telemetry.update();
+        }
+// モーターが目標位置に到達したら停止
+        hexMotor.setPower(0);
+        hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    public void returnToZero() {
+        hexMotor.setTargetPosition(0);
+        hexMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        hexMotor.setPower(0.7);
+
+        while (hexMotor.isBusy()) {
+            telemetry.addData("Current Position", hexMotor.getCurrentPosition());
+            telemetry.update();
+        }
+// モーターが目標位置に到達したら停止
+        hexMotor.setPower(0);
+        hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+
+
 }
+
+

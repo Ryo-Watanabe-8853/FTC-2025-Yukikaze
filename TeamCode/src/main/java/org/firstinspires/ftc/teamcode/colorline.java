@@ -60,8 +60,8 @@ public class colorline extends OpMode {
             telemetry.addData("Color Sensor is Watching","Something Far");
             frontRight.setPower(0.2);
             backRight.setPower(-0.2);
-            frontLeft.setPower(-0.2);
-            backLeft.setPower(0.2);
+            frontLeft.setPower(0.2);
+            backLeft.setPower(-0.2);
         }
 
 
