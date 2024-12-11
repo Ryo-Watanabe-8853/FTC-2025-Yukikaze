@@ -1,10 +1,23 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 
 @TeleOp
@@ -28,7 +41,14 @@ public class main extends OpMode {
     private boolean leftBumperPressed = false;
     private boolean rightBumperPressed = false;
 
-
+    // AprilTag Variables
+    private static final boolean USE_WEBCAM = true;
+    private Position cameraPosition = new Position(DistanceUnit.INCH, 0, 0, 0, 0);
+    private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0);
+    private AprilTagProcessor aprilTag;
+    private VisionPortal visionPortal;
+    BNO055IMU imu;
+    double imuAngle;
     @Override
 
     public void init() {
@@ -58,6 +78,14 @@ public class main extends OpMode {
         hexMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         hexMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
+        imuParameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu.initialize(imuParameters);
+
+
+        initAprilTag();
     }
 
     @Override
@@ -66,12 +94,17 @@ public class main extends OpMode {
         double y = -gamepad1.left_stick_y;
         double rotation = gamepad1.right_stick_x;
 
+        imuAngle = imu.getAngularOrientation().firstAngle;
+
+        double tempX = x * Math.cos(imuAngle) - y * Math.sin(imuAngle);
+        double tempY = x * Math.sin(imuAngle) + y * Math.cos(imuAngle);
+
         double maxSpeed = 0.7;
 
-        double powerFrontLeft = y + x + rotation;
-        double powerFrontRight = y - x - rotation;
-        double powerBackLeft = y - x + rotation;
-        double powerBackRight = y + x - rotation;
+        double powerFrontLeft = tempY + tempX + rotation;
+        double powerFrontRight = tempY - tempX - rotation;
+        double powerBackLeft = tempY - tempX + rotation;
+        double powerBackRight = tempY + tempX - rotation;
 
         double maxPower = Math.max(Math.abs(powerFrontLeft),
                             Math.max(Math.abs(powerFrontRight),
@@ -166,6 +199,14 @@ public class main extends OpMode {
         if(gamepad1.b){
             returnToZero();
         }
+        telemetryAprilTag();
+
+        // Example: Stream control
+        if (gamepad1.dpad_down) {
+            visionPortal.stopStreaming();
+        } else if (gamepad1.dpad_up) {
+            visionPortal.resumeStreaming();
+        }
 
     }
     public void encoder(double turnage){
@@ -194,7 +235,41 @@ public class main extends OpMode {
         hexMotor.setPower(0);
         hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+    private void initAprilTag() {
+        aprilTag = new AprilTagProcessor.Builder()
+                .setCameraPose(cameraPosition, cameraOrientation)
+                .build();
 
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+        if (USE_WEBCAM) {
+            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+        } else {
+            builder.setCamera(BuiltinCameraDirection.BACK);
+        }
+        builder.addProcessor(aprilTag);
+        visionPortal = builder.build();
+    }
+
+    private void telemetryAprilTag() {
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null) {
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f (millimeter)",
+                        detection.robotPose.getPosition().x,
+                        detection.robotPose.getPosition().y,
+                        detection.robotPose.getPosition().z));
+                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f (deg)",
+                        detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
+                        detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
+                        detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+            } else {
+                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+            }
+        }
+    }
 
 
 }
