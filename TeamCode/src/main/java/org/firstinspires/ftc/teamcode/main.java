@@ -63,7 +63,7 @@ public class main extends OpMode {
     @Override
     public void loop() {
         double x = gamepad1.left_stick_x;
-        double y = -gamepad1.left_stick_y;
+        double y = gamepad1.left_stick_y;
         double rotation = gamepad1.right_stick_x;
 
         double maxSpeed = 0.7;
@@ -108,13 +108,16 @@ public class main extends OpMode {
         }
 
         if (gamepad1.left_bumper && !leftBumperPressed) {
-            servo2Stage = (servo2Stage + 1) % 2;  // Cycle through 3 stages
+            servo2Stage = (servo2Stage + 1) % 3;  // Cycle through 3 stages
             switch (servo2Stage) {
                 case 0:
                     servo2.setPosition(0);
                     break;
                 case 1:
-                    servo2.setPosition(0.7);
+                    servo2.setPosition(0.6);
+                    break;
+                case 2:
+                    servo2.setPosition(0.9);
                     break;
             }
             leftBumperPressed = true;
@@ -182,17 +185,23 @@ public class main extends OpMode {
         hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     public void returnToZero() {
+        // エンコーダーのリセット（必要に応じて）
+        hexMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         hexMotor.setTargetPosition(0);
+
+        // RUN_TO_POSITION モードに設定
         hexMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         hexMotor.setPower(0.7);
 
+        // モーターが目標位置に到達するまで待機
         while (hexMotor.isBusy()) {
             telemetry.addData("Current Position", hexMotor.getCurrentPosition());
             telemetry.update();
         }
-// モーターが目標位置に到達したら停止
-        hexMotor.setPower(0);
-        hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // モーターを停止して保持力を残す
+        hexMotor.setPower(0.2); // 必要であれば少しのトルクを残す (例: hexMotor.setPower(0.1);)
+        // モードを変更しない
     }
 
 
