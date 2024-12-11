@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,6 +29,8 @@ public class main extends OpMode {
     private boolean leftBumperPressed = false;
     private boolean rightBumperPressed = false;
 
+    BNO055IMU imu;
+    double imuAngle;
 
     @Override
 
@@ -58,6 +61,12 @@ public class main extends OpMode {
         hexMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         hexMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
+        imuParameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu.initialize(imuParameters);
+
     }
 
     @Override
@@ -68,10 +77,15 @@ public class main extends OpMode {
 
         double maxSpeed = 0.7;
 
-        double powerFrontLeft = y + x + rotation;
-        double powerFrontRight = y - x - rotation;
-        double powerBackLeft = y - x + rotation;
-        double powerBackRight = y + x - rotation;
+        imuAngle = imu.getAngularOrientation().firstAngle;
+
+        double tempX = x * Math.cos(imuAngle) - y * Math.sin(imuAngle);
+        double tempY = x * Math.sin(imuAngle) + y * Math.cos(imuAngle);
+
+        double powerFrontLeft = tempY + tempX + rotation;
+        double powerFrontRight = tempY - tempX - rotation;
+        double powerBackLeft = tempY - tempX + rotation;
+        double powerBackRight = tempY + tempX - rotation;
 
         double maxPower = Math.max(Math.abs(powerFrontLeft),
                             Math.max(Math.abs(powerFrontRight),
