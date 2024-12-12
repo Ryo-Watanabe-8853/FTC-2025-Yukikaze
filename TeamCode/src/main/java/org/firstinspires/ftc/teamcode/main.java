@@ -29,8 +29,8 @@ public class main extends OpMode {
     private boolean leftBumperPressed = false;
     private boolean rightBumperPressed = false;
 
-    BNO055IMU imu;
-    double imuAngle;
+    private BNO055IMU imu;
+    private double imuAngle;
 
     @Override
 
