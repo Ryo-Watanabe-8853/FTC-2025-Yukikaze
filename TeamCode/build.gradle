@@ -33,7 +33,7 @@ dependencies {
     implementation 'org.openftc:apriltag:2.1.0'
 }
 dependencies {
-    implementation 'org.firstinspires.ftc:RobotCore:8.0'
-    implementation 'org.firstinspires.ftc:Hardware:8.0'
+    implementation 'org.firstinspires.ftc:RobotCore:10.1.0'
+    implementation 'org.firstinspires.ftc:Hardware:10.1.0'
 }
 

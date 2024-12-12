@@ -43,15 +43,15 @@ public class main extends OpMode {
 
     // AprilTag Variables
     private static final boolean USE_WEBCAM = true;
-    private Position cameraPosition = new Position(DistanceUnit.INCH, 0, 0, 0, 0);
+    private Position cameraPosition = new Position(DistanceUnit.MM, 0, 230, 85, 0);
     private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0);
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
     BNO055IMU imu;
     double imuAngle;
 
-    private PIDController distancePID = new PIDController(0.005, 0.0, 0.001); // 距離制御
-    private PIDController anglePID = new PIDController(0.02, 0.0, 0.005);      // 角度制御
+    private PIDController distancePID = new PIDController(0.025, 0.0, 0.0005); // 距離制御
+    private PIDController anglePID = new PIDController(0.01, 0.0, 0.001);      // 角度制御
 
     @Override
 
@@ -99,13 +99,13 @@ public class main extends OpMode {
                 telemetry.addData("Target Detected", "AprilTag ID: 13");
 
                 // 目標位置と角度
-                double targetDistance = 300; // 目標距離 (mm)
-                double targetAngle = Math.toRadians(45); // 目標角度 (ラジアン)
+                double targetDistance = 100;
+                double targetAngle = Math.toRadians(135); // 目標角度 (ラジアン)
 
                 // 現在の位置と角度を取得
-                double currentX = detection.robotPose.getPosition().x; // 現在のX座標 (mm)
-                double currentY = detection.robotPose.getPosition().y; // 現在のY座標 (mm)
-                double currentAngle = imu.getAngularOrientation().firstAngle; // 現在の角度 (ラジアン)
+                double currentX = detection.robotPose.getPosition().x;
+                double currentY = detection.robotPose.getPosition().y;
+                double currentAngle = imu.getAngularOrientation().firstAngle;
 
                 // 現在の距離を計算
                 double currentDistance = Math.sqrt(currentX * currentX + currentY * currentY);
@@ -149,7 +149,7 @@ public class main extends OpMode {
         }
 
         double x = gamepad1.left_stick_x;
-        double y = -gamepad1.left_stick_y;
+        double y = gamepad1.left_stick_y;
         double rotation = gamepad1.right_stick_x;
 
         imuAngle = imu.getAngularOrientation().firstAngle;
