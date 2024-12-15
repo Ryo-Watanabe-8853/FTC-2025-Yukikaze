@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Math.PI;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -50,8 +52,6 @@ public class main extends OpMode {
     BNO055IMU imu;
     double imuAngle;
 
-    private PIDController distancePID = new PIDController(0.025, 0.0, 0.0005); // 距離制御
-    private PIDController anglePID = new PIDController(0.01, 0.0, 0.001);      // 角度制御
 
     @Override
 
@@ -99,8 +99,8 @@ public class main extends OpMode {
                 telemetry.addData("Target Detected", "AprilTag ID: 13");
 
                 // 目標位置と角度
-                double targetDistance = 100;
-                double targetAngle = Math.toRadians(135); // 目標角度 (ラジアン)
+                double targetDistance = 50;
+                double targetAngle = Math.toRadians(-45); // 目標角度 (ラジアン)
 
                 // 現在の位置と角度を取得
                 double currentX = detection.robotPose.getPosition().x;
@@ -109,43 +109,28 @@ public class main extends OpMode {
 
                 // 現在の距離を計算
                 double currentDistance = Math.sqrt(currentX * currentX + currentY * currentY);
-
-                // PID制御でエラーを計算
-                double forwardPower = distancePID.calculate(targetDistance, currentDistance);
-                double rotationPower = anglePID.calculate(targetAngle, currentAngle);
-
-                // モーター出力計算
-                double powerFrontLeft = forwardPower + rotationPower;
-                double powerFrontRight = forwardPower - rotationPower;
-                double powerBackLeft = forwardPower + rotationPower;
-                double powerBackRight = forwardPower - rotationPower;
-
-                // モーター出力を適用
-                frontLeft.setPower(powerFrontLeft);
-                frontRight.setPower(powerFrontRight);
-                backLeft.setPower(powerBackLeft);
-                backRight.setPower(powerBackRight);
-
-                // テレメトリでデバッグ情報を表示
-                telemetry.addData("Distance Error", targetDistance - currentDistance);
-                telemetry.addData("Angle Error", Math.toDegrees(targetAngle - currentAngle));
-                telemetry.addData("Forward Power", forwardPower);
-                telemetry.addData("Rotation Power", rotationPower);
-                telemetry.update();
-
-                // 条件を満たしたら停止
-                if (Math.abs(targetDistance - currentDistance) < 10 && Math.abs(Math.toDegrees(targetAngle - currentAngle)) < 5) {
-                    frontLeft.setPower(0);
-                    frontRight.setPower(0);
-                    backLeft.setPower(0);
-                    backRight.setPower(0);
-                    distancePID.reset();
-                    anglePID.reset();
-                    telemetry.addData("Status", "Target Reached");
+                if ((currentAngle - targetAngle) > 2) {
+                    turnRight();
+                    telemetry.addData("robot is","turning right");
                     telemetry.update();
+                } else if (currentAngle - targetAngle < -2) {
+                    turnLeft();
+                    telemetry.addData("robot is","turning left");
+                    telemetry.update();
+                } else if ((currentDistance - targetDistance) > 10) {
+                    moveForward();
+                    telemetry.addData("robot is","moving forward");
+                    telemetry.update();
+                } else if ((currentDistance - targetDistance) < -10) {
+                    moveBack();
+                    telemetry.addData("robot is","moving backward");
+                    telemetry.update();
+                } else {
+                    stopMotor();
                 }
                 return;
             }
+
         }
 
         double x = gamepad1.left_stick_x;
@@ -290,7 +275,7 @@ public class main extends OpMode {
             telemetry.update();
         }
 // モーターが目標位置に到達したら停止
-        hexMotor.setPower(0);
+        hexMotor.setPower(0.2);
         hexMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     private void initAprilTag() {
@@ -328,31 +313,35 @@ public class main extends OpMode {
             }
         }
     }
-}
-// PIDコントローラークラス
-class PIDController {
-    private double kp, ki, kd;
-    private double integral, previousError;
-
-    public PIDController(double kp, double ki, double kd) {
-        this.kp = kp;
-        this.ki = ki;
-        this.kd = kd;
-        this.integral = 0;
-        this.previousError = 0;
+    private void moveForward() {
+        frontRight.setPower(-0.3);
+        frontLeft.setPower(-0.3);
+        backRight.setPower(-0.3);
+        backLeft.setPower(-0.3);
     }
-
-    public double calculate(double target, double current) {
-        double error = target - current;
-        integral += error;
-        double derivative = error - previousError;
-        previousError = error;
-        return (kp * error) + (ki * integral) + (kd * derivative);
+    private void moveBack() {
+        frontRight.setPower(0.3);
+        frontLeft.setPower(0.3);
+        backRight.setPower(0.3);
+        backLeft.setPower(0.3);
     }
-
-    public void reset() {
-        integral = 0;
-        previousError = 0;
+    private void turnRight() {
+        frontRight.setPower(-0.3);
+        frontLeft.setPower(0.3);
+        backRight.setPower(-0.3);
+        backLeft.setPower(0.3);
+    }
+    private void turnLeft() {
+        frontRight.setPower(0.3);
+        frontLeft.setPower(-0.3);
+        backRight.setPower(0.3);
+        backLeft.setPower(-0.3);
+    }
+    private void stopMotor(){
+        frontRight.setPower(-0);
+        frontLeft.setPower(0);
+        backRight.setPower(-0);
+        backLeft.setPower(0);
     }
 }
 
